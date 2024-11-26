@@ -1,4 +1,9 @@
 version: "3.8"
+
+networks:
+  quickthought_network: # Define a custom network
+    driver: bridge
+
 services:
   frontend:
     build:
@@ -9,20 +14,25 @@ services:
       - ./frontend/QuickThought:/app
     depends_on:
       - backend
+    networks:
+      - quickthought_network
 
   backend:
     build:
       context: ./backend
     ports:
-      - "5000:5000" # Exposing backend on port 5000
+      - "5222:5000" # Mapping host port 5222 to container port 5000
     volumes:
       - ./backend:/app
     environment:
-      - FLASK_APP=app.py # Ensure Flask knows which file to run
-      - FLASK_ENV=development # Set environment to development (can be production in deployment)
-      - DATABASE_URI=mysql+pymysql://root:100123@db:3306/QuickThought # Use db service as host
+      - FLASK_APP=run.py
+      - FLASK_ENV=development
+      - DATABASE_URI=mysql+pymysql://root:100123@db:3306/QuickThought
+      - FIREBASE_CONFIG_PATH=/app/config/firebase_config.json
     depends_on:
       - db
+    networks:
+      - quickthought_network
 
   db:
     image: mysql:8
@@ -30,10 +40,18 @@ services:
       MYSQL_ROOT_PASSWORD: 100123
       MYSQL_DATABASE: QuickThought
     ports:
-      - "33061:3306" # Exposing MySQL on port 33061 externally, but container uses 3306
+      - "33062:3306" # Mapping host port 33062 to container port 3306
     volumes:
       - db_data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+    networks:
+      - quickthought_network
 
 volumes:
   db_data:

@@ -1,28 +1,30 @@
-# Use an official Python image
+# Use the official Python image as a parent image
 FROM python:3.10-slim
-
-# Install system dependencies for mysqlclient
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    pkg-config \
-    libmariadb-dev-compat \
-    libmariadb-dev \
-    && apt-get clean
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy requirements file to install Python dependencies
-COPY requirements.txt /app/
+# Install system dependencies required for mysqlclient
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    default-libmysqlclient-dev \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# Install any needed packages specified in requirements.txt
+COPY requirements.txt ./
+RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code into the container
-COPY . /app/
+# Copy the rest of the application code into the container
+COPY . .
 
-# Expose the backend port
+# Make port 5000 available to the world outside this container
 EXPOSE 5000
 
-# Command to run your Flask app
-CMD ["python", "run.py"]
+# Define environment variable for Flask
+ENV FLASK_APP=run.py
+ENV FLASK_ENV=development
+
+# Run the application
+CMD ["flask", "run", "--host=0.0.0.0"]
