@@ -5,7 +5,7 @@ const Profile = () => {
         <div>
             <div>
                 {/* Navigation/Header Section */}
-                <div className="py-4 bg-green-400 bg-opacity-30">
+                <div className="py-4 bg-green-400 bg-opacity-30 fixed ">
                     Home
                 </div>
 
