@@ -15,8 +15,8 @@ class AboutUser(db.Model):
 
     # Relationships
     user = db.relationship(
-        "User", backref=db.backref("about_user", uselist=False), lazy=True
+        "User", backref=db.backref("aboutUser", uselist=False), lazy=True
     )
     # photos = db.relationship(
-    #     "Photo", backref=db.backref("about_user", uselist=False), lazy=True
+    #     "Photo", backref=db.backref("aboutUser", uselist=False), lazy=True
     # )

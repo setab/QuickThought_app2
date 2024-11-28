@@ -15,6 +15,7 @@ def get_thoughts():
             "content": thought.content,
             "timestamp": thought.timestamp,
             "user_id": thought.user_id,
+            "username": thought.user.username,
         }
         for thought in thoughts
     ]

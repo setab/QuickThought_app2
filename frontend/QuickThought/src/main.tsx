@@ -1,44 +1,53 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.css';
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
-import Login from './Pages/Login.tsx';
-import Signin from './Pages/Signin.tsx';
-import MainLayout from './Pages/MainLayout.tsx';
-import Profile from './Pages/Profile.tsx';
-import Home from './Pages/Home.tsx';
+import Login from "./Pages/Login";
+import Signin from "./Pages/Signin";
+import MainLayout from "./Pages/MainLayout";
+import Profile from "./Pages/Profile";
+import Home from "./Pages/Home";
+import ProtectedRoute from "./components/ProtectedRoute"; // Import your ProtectedRoute
+import { AuthProvider } from "./components/AuthContext"; // Import your AuthProvider
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />, // Main layout wrapping the child routes
+    element: <MainLayout />,
     children: [
       {
         path: "/", // Home route
-        element: <Home />
+        element: (
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "/profile", // Profile route
-        element: <Profile />
-      }
-    ]
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
   {
     path: "/login", // Login route
-    element: <Login />
+    element: <Login />,
   },
   {
     path: "/signin", // Signin route
-    element: <Signin />
-  }
+    element: <Signin />,
+  },
 ]);
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>
 );

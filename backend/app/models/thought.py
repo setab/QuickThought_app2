@@ -13,4 +13,11 @@ class Thought(db.Model):
     user = db.relationship(
         "User", backref=db.backref("thoughts", lazy=True)
     )  # Relationship to User
+    # images = db.relationship("UploadImage", backref=db.backref("thoughts", lazy=True))
     timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    # profile_picture = db.relationship(
+    #     "UploadImage",
+    #     primaryjoin="foreign(Thought.user_id) == remote(UploadImage.user_id)",
+    #     uselist=False,  # Assuming one user has one profile picture
+    # )

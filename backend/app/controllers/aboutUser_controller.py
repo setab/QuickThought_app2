@@ -8,7 +8,15 @@ def get_aboutUser(user_id):
     if not aboutUser:
         return jsonify({"message": "nothing to show"})
     aboutUser = [
-        {"id": aboutUser.id, "bio": aboutUser.bio, "user_id": aboutUser.user_id}
+        {
+            "id": aboutUser.id,
+            "bio": aboutUser.bio,
+            "user_id": aboutUser.user_id,
+            # "profile_pic": (
+            #     aboutUser.profile_picture.pp if aboutUser.profile_picture else None
+            # ),
+            # "display_pic": aboutUser.user.photos,
+        }
     ]
     return jsonify({"aboutUser": aboutUser}), 200
 
