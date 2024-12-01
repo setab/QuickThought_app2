@@ -14,8 +14,13 @@ def create_app():
         os.path.dirname(app.root_path), "uploads"
     )
     app.config["MAX_CONTENT_LENGTH"] = 5 * 1000 * 1000
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+    )
 
-    CORS(app)
+    CORS(app, supports_credentials=True)
     Session(app)
     db.init_app(app)
 

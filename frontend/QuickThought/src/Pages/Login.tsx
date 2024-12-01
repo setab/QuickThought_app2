@@ -1,16 +1,39 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import logo from "../assets/Images/Logo.png";
-import React from "react";
 
-const Login = () => {
-  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+const Login: React.FC = () => {
+  const [error, setError] = useState<string | null>(null); // Error state for invalid login
+  const navigate = useNavigate(); // Used to navigate after successful login
+
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const form = event.target as HTMLFormElement; // Explicitly cast target to HTMLFormElement
-    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
-    const password = (form.elements.namedItem("password") as HTMLInputElement)
-      .value;
-    console.log("Email:", email, "Password:", password);
-    form.reset(); // Optionally reset the form after submission
+    const form = event.target as HTMLFormElement;
+    const formData = new FormData(form);
+    const username = formData.get("username") as string;
+    const password = formData.get("password") as string;
+
+    try {
+      // Send login request to the backend
+      const response = await fetch("http://127.0.0.1:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+        credentials: "include", // Include session cookie in the request
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      // If successful, navigate to the home page
+      navigate("/");
+    } catch (err: unknown) {
+      setError((err as Error).message); // Display error message
+    }
   };
 
   return (
@@ -32,8 +55,8 @@ const Login = () => {
                 </label>
                 <input
                   type="text"
-                  name="username" // Add the name attribute to match the form handler
-                  placeholder="user name"
+                  name="username"
+                  placeholder="User name"
                   className="input input-bordered"
                   required
                 />
@@ -44,8 +67,8 @@ const Login = () => {
                 </label>
                 <input
                   type="password"
-                  name="password" // Add the name attribute to match the form handler
-                  placeholder="password"
+                  name="password"
+                  placeholder="Password"
                   className="input input-bordered"
                   required
                 />
@@ -55,6 +78,13 @@ const Login = () => {
                   </a>
                 </label>
               </div>
+
+              {error && (
+                <div className="text-red-500 text-sm mb-2">
+                  {error} {/* Show error message */}
+                </div>
+              )}
+
               <div className="form-control mt-6">
                 <button
                   type="submit"

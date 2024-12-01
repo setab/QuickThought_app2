@@ -9,7 +9,7 @@ import MainLayout from "./Pages/MainLayout";
 import Profile from "./Pages/Profile";
 import Home from "./Pages/Home";
 import ProtectedRoute from "./components/ProtectedRoute"; // Import your ProtectedRoute
-import { AuthProvider } from "./components/AuthContext"; // Import your AuthProvider
+import { AuthProvider } from "./components/AuthProvider"; // Import your AuthProvider
 
 const router = createBrowserRouter([
   {

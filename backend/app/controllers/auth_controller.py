@@ -30,6 +30,18 @@ def register_user(username, email, password):
     return jsonify({"message": "User registration successful"}), 201
 
 
+def auth_provider():
+    if "user_id" in session:
+        return jsonify({"authenticated": True}), 200
+    return jsonify({"authenticated": False}), 401
+
+
+def get_current_id():
+    if "user_id" in session:  # Check session for user_id
+        return jsonify({"user_id": session["user_id"]}), 200
+    return jsonify({"error": "Unauthorized"}), 401
+
+
 def logout_user():
     user_id = session.get("user_id")
 

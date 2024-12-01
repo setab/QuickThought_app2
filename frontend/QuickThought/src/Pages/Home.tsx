@@ -3,52 +3,73 @@ import { AiOutlineLike } from "react-icons/ai";
 import ProfilePic from "../components/ProfilePic";
 import axios from "axios";
 
-const Home = () => {
-  const [thought, setThought] = useState(""); // State to manage the input value
-  const [ThoughData, ThoughtSetData] = useState<any[]>([]); // State to store thought data
+interface Thought {
+  id: number;
+  user_id: number;
+  username: string;
+  content: string;
+  timestamp: string; // Use ISO date string
+}
 
-  // Handle form submission
-  const handlePost = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault(); // Prevent page reload
-    console.log("Posted Thought:", thought); // Log the input value
-    setThought(""); // Clear the input field after posting
+const Home = () => {
+  const [thought, setThought] = useState(""); // Input state
+  const [ThoughData, ThoughtSetData] = useState<Thought[]>([]); // Thought data
+  const [UserData, setUserData] = useState<{ user_id: number } | null>(null); // User data
+  const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [error, setError] = useState<string | null>(null); // Error state
+
+  const handlePost = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const response = await axios.post(
+        "http://127.0.0.1:5000/api/thought/addThoughts",
+        {
+          // user_id: UserData?.user_id,
+          content: thought,
+        }
+      );
+      setThought(""); // Clear input
+      ThoughtSetData((prev) => [response.data, ...prev]); // Add new thought
+    } catch (err) {
+      console.error("Failed to post thought:", err);
+    }
   };
 
-  // Fetch data from the API
   useEffect(() => {
     axios
       .get("http://127.0.0.1:5000/api/thought/thoughts")
-      .then((response) => {
-        ThoughtSetData(response.data.thoughts); // Set thought data from the API
+      .then((response) => ThoughtSetData(response.data.thoughts))
+      .catch(() => setError("Failed to load thoughts."))
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:5000/api/auth/user_id", {
+        withCredentials: true,
       })
-      .catch((error) => console.error(error));
-  }, []); // Only run once when the component mounts
-  console.log(ThoughData);
+      .then((response) => setUserData(response.data))
+      .catch((err) => console.error("Failed to fetch user:", err));
+  }, []);
 
   return (
     <div className="w-11/12 mx-auto">
-      {/* Post Part */}
+      {/* Post Section */}
       <div className="flex flex-grow mb-8">
-        <div>
-          <div className="avatar">
-            <div className="w-14 rounded-full">
-              <img
-                className="w-14"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                alt="User Avatar"
-              />
-            </div>
+        <div className="avatar">
+          <div className="w-14 rounded-full">
+            {UserData && <ProfilePic userId={UserData.user_id} />}
           </div>
         </div>
 
         <form className="w-full" onSubmit={handlePost}>
           <input
             type="text"
-            value={thought} // Bind input to state
-            onChange={(e) => setThought(e.target.value)} // Update state on change
+            value={thought}
+            onChange={(e) => setThought(e.target.value)}
             placeholder="Share your quick thoughts!!"
             className="input input-ghost w-full ml-6"
-            required // Make the input field required
+            required
           />
           <hr className="my-5 ml-5" />
           <button
@@ -62,21 +83,22 @@ const Home = () => {
 
       <hr className="my-8" />
 
-      {/* News Feed Part */}
+      {/* News Feed */}
       <div>
-        {ThoughData.length > 0 ? (
-          ThoughData.map((thoughtItem: any) => (
+        {isLoading ? (
+          <p>Loading thoughts...</p>
+        ) : error ? (
+          <p>{error}</p>
+        ) : ThoughData.length > 0 ? (
+          ThoughData.map((thoughtItem) => (
             <div key={thoughtItem.id} className="flex items-start gap-4 my-4">
-              {/* Avatar */}
               <div className="avatar">
                 <div className="w-14 rounded-full">
                   <ProfilePic userId={thoughtItem.user_id} />
                 </div>
               </div>
 
-              {/* Text Content */}
               <div className="flex flex-col w-full">
-                {/* Name and Date */}
                 <div className="flex justify-between items-center">
                   <h3 className="font-semibold text-lg">
                     {thoughtItem.username}
@@ -86,10 +108,8 @@ const Home = () => {
                   </h3>
                 </div>
 
-                {/* Thought Content */}
                 <p className="text-sm mt-2 opacity-80">{thoughtItem.content}</p>
 
-                {/* Like Button */}
                 <div className="flex gap-10 mt-4">
                   <div className="flex items-center gap-2">
                     <AiOutlineLike />
