@@ -8,7 +8,7 @@ import Signin from "./Pages/Signin";
 import MainLayout from "./Pages/MainLayout";
 import Profile from "./Pages/Profile";
 import Home from "./Pages/Home";
-import ProtectedRoute from "./components/ProtectedRoute"; // Import your ProtectedRoute
+// import ProtectedRoute from "./components/ProtectedRoute"; // Import your ProtectedRoute
 import { AuthProvider } from "./components/AuthProvider"; // Import your AuthProvider
 
 const router = createBrowserRouter([
@@ -19,17 +19,17 @@ const router = createBrowserRouter([
       {
         path: "/", // Home route
         element: (
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <Home />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         ),
       },
       {
         path: "/profile", // Profile route
         element: (
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <Profile />
-          </ProtectedRoute>
+          // </ProtectedRoute>
         ),
       },
     ],
