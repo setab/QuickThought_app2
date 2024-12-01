@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { AiOutlineLike } from "react-icons/ai";
 import ProfilePic from "../components/ProfilePic";
 import axios from "axios";
+import LikeCount from "../components/LikeCount";
 
 interface Thought {
   id: number;
@@ -113,7 +114,7 @@ const Home = () => {
                 <div className="flex gap-10 mt-4">
                   <div className="flex items-center gap-2">
                     <AiOutlineLike />
-                    <p>57</p>
+                    <p>{<LikeCount thoughtId={thoughtItem.id} />}</p>
                   </div>
                 </div>
               </div>

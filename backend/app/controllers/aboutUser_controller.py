@@ -12,10 +12,7 @@ def get_aboutUser(user_id):
             "id": aboutUser.id,
             "bio": aboutUser.bio,
             "user_id": aboutUser.user_id,
-            # "profile_pic": (
-            #     aboutUser.profile_picture.pp if aboutUser.profile_picture else None
-            # ),
-            # "display_pic": aboutUser.user.photos,
+            "username": aboutUser.user.username,
         }
     ]
     return jsonify({"aboutUser": aboutUser}), 200

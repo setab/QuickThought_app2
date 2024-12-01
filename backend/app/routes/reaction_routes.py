@@ -1,5 +1,5 @@
 from flask import Blueprint, request, session, jsonify
-from app.controllers.reactions_controller import like_thought
+from app.controllers.reactions_controller import like_thought, get_reaction_count
 
 reaction_bp = Blueprint("reaction", __name__, url_prefix="/api/reaction")
 
@@ -20,3 +20,8 @@ def like():
 
         # Call the controller function and pass the extracted data
         return like_thought(thought_id, user_id)
+
+
+@reaction_bp.route("/getlike/<int:thought_id>", methods=["GET"])
+def get_like(thought_id):
+    return get_reaction_count(thought_id)

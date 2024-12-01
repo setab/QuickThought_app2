@@ -16,8 +16,6 @@ class User(db.Model):
         onupdate=db.func.current_timestamp(),
     )
     password = db.Column(db.String(255), nullable=False)
-    # pp = db.relationship("UploadImage", backref=db.backref("users", lazy=True))
-    # dp = db.relationship("UploadImage", backref=db.backref("users", lazy=True))
 
     # Hash password
     def set_passwd(self, password):

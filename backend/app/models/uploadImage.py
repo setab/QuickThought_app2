@@ -12,4 +12,3 @@ class UploadImage(db.Model):
     )  # Referencing 'user' table
 
     uploaded_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    # thought = db.relationship("Thought", back_populates="images")
