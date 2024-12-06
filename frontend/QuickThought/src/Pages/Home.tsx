@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { AiOutlineLike } from "react-icons/ai";
 import ProfilePic from "../components/ProfilePic";
 import axios from "axios";
-import LikeCount from "../components/LikeCount";
+import LikeButton from "../components/LikeButton";
 
 interface Thought {
   id: number;
@@ -12,39 +11,55 @@ interface Thought {
   timestamp: string; // Use ISO date string
 }
 
+interface Like {
+  thought_id: number;
+}
+
 const Home = () => {
   const [thought, setThought] = useState(""); // Input state
-  const [ThoughData, ThoughtSetData] = useState<Thought[]>([]); // Thought data
-  const [UserData, setUserData] = useState<{ user_id: number } | null>(null); // User data
+  const [thoughtData, setThoughtData] = useState<Thought[]>([]); // Thought data
+  const [userData, setUserData] = useState<{ user_id: number } | null>(null); // User data
   const [isLoading, setIsLoading] = useState(true); // Loading state
   const [error, setError] = useState<string | null>(null); // Error state
+  const [seed, setSeed] = useState(1); // Seed state for triggering re-render
+  const [likes, setLikes] = useState<number[]>([]); // Array of liked thought IDs
 
   const handlePost = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
       const response = await axios.post(
         "http://127.0.0.1:5000/api/thought/addThoughts",
-        {
-          // user_id: UserData?.user_id,
-          content: thought,
-        }
+        { content: thought },
+        { withCredentials: true }
       );
-      setThought(""); // Clear input
-      ThoughtSetData((prev) => [response.data, ...prev]); // Add new thought
+      console.log(response.data);
+
+      // After posting, update the seed to trigger re-fetch
+      setSeed(Math.random());
+      setThought(""); // Clear the input
     } catch (err) {
       console.error("Failed to post thought:", err);
     }
   };
 
   useEffect(() => {
+    // Fetch all thoughts
     axios
       .get("http://127.0.0.1:5000/api/thought/thoughts")
-      .then((response) => ThoughtSetData(response.data.thoughts))
+      .then((response) =>
+        setThoughtData(
+          response.data.thoughts.sort(
+            (a: Thought, b: Thought) =>
+              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )
+        )
+      )
       .catch(() => setError("Failed to load thoughts."))
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [seed]); // Re-fetch thoughts when seed changes
 
   useEffect(() => {
+    // Fetch current user data
     axios
       .get("http://127.0.0.1:5000/api/auth/user_id", {
         withCredentials: true,
@@ -53,13 +68,40 @@ const Home = () => {
       .catch((err) => console.error("Failed to fetch user:", err));
   }, []);
 
+  useEffect(() => {
+    // Fetch user's likes
+    console.log("Fetching user likes...");
+    axios
+      .get("http://127.0.0.1:5000/api/reaction/get_user_likes", {
+        withCredentials: true,
+      })
+      .then((response) => {
+        console.log("Response Data:", response.data); // Log the full response for debugging
+
+        // Access likes properly from the nested "data" key
+        if (response.data.success && response.data.data.likes) {
+          console.log("Likes fetched:", response.data.data.likes); // Log the likes array
+          setLikes(
+            response.data.data.likes.map((like: Like) => like.thought_id)
+          ); // Extract thought IDs
+        } else {
+          console.log("No likes found");
+          setLikes([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch user likes:", err);
+        setError("Failed to load user likes.");
+      });
+  }, []);
+
   return (
     <div className="w-11/12 mx-auto">
       {/* Post Section */}
       <div className="flex flex-grow mb-8">
         <div className="avatar">
           <div className="w-14 rounded-full">
-            {UserData && <ProfilePic userId={UserData.user_id} />}
+            {userData && <ProfilePic userId={userData.user_id} />}
           </div>
         </div>
 
@@ -90,8 +132,8 @@ const Home = () => {
           <p>Loading thoughts...</p>
         ) : error ? (
           <p>{error}</p>
-        ) : ThoughData.length > 0 ? (
-          ThoughData.map((thoughtItem) => (
+        ) : thoughtData.length > 0 ? (
+          thoughtData.map((thoughtItem) => (
             <div key={thoughtItem.id} className="flex items-start gap-4 my-4">
               <div className="avatar">
                 <div className="w-14 rounded-full">
@@ -113,8 +155,14 @@ const Home = () => {
 
                 <div className="flex gap-10 mt-4">
                   <div className="flex items-center gap-2">
-                    <AiOutlineLike />
-                    <p>{<LikeCount thoughtId={thoughtItem.id} />}</p>
+                    <LikeButton
+                      thoughtId={thoughtItem.id}
+                      initialUserLiked={likes.includes(thoughtItem.id)}
+                      // Check if the user already liked this thought
+                    />
+                    <div>
+                      {/* {likes.includes(thoughtItem.id)},{thoughtItem.id} */}
+                    </div>
                   </div>
                 </div>
               </div>

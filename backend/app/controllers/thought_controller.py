@@ -50,3 +50,29 @@ def add_thoughts(content, user_id):
     db.session.add(new_thought)
     db.session.commit()
     return jsonify({"message": "content added successfully"})
+
+
+def delete_thought(thought_id):
+    try:
+        # Query the thought by ID
+        thought_to_delete = Thought.query.filter_by(id=thought_id).first()
+
+        if not thought_to_delete:
+            return jsonify({"message": "Thought not found"}), 404
+
+        # Delete the thought
+        db.session.delete(thought_to_delete)
+        db.session.commit()
+
+        return (
+            jsonify({"success": True, "message": "Thought deleted successfully"}),
+            200,
+        )
+    except Exception as e:
+        db.session.rollback()  # Rollback if something goes wrong
+        return (
+            jsonify(
+                {"success": True, "message": f"Failed to delete thought: {str(e)}"}
+            ),
+            500,
+        )

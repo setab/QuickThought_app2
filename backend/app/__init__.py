@@ -9,6 +9,11 @@ db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
+    # CORS(
+    #     app,
+    #     resources={r"/*": {"origins": "http://127.0.0.1:9000"}},
+    #     supports_credentials=True,
+    # )
     app.config.from_object("app.config.Config")
     app.config["UPLOAD_FOLDER"] = os.path.join(
         os.path.dirname(app.root_path), "uploads"

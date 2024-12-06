@@ -4,9 +4,9 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { AiOutlineLike } from "react-icons/ai";
+import { AiOutlineLike, AiOutlineDelete } from "react-icons/ai";
 import ProfilePic from "../components/ProfilePic";
-import LikeCount from "../components/LikeCount";
+import LikeButton from "../components/LikeButton";
 
 interface AboutUser {
   bio: string;
@@ -17,55 +17,106 @@ interface AboutUser {
   followers: number;
   following: number;
 }
+
 interface Thoughts {
   content: string;
   id: number;
   timestamp: string;
 }
+
 const Profile = () => {
   const [userData, setUserData] = useState<AboutUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Loading state
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [UserThoughts, setUserThoughts] = useState<Thoughts[]>([]);
+  const [likes, setLikes] = useState<number[]>([]);
 
+  // Fetch user data
   useEffect(() => {
     axios
       .get("http://127.0.0.1:5000/api/aboutUser/userData", {
         withCredentials: true,
       })
       .then((response) => {
-        setUserData(response.data.aboutUser[0]); // Directly set the first object
-        setError(null); // Clear any error
+        setUserData(response.data.aboutUser[0]);
+        setError(null);
       })
       .catch((err) => {
         console.error("Failed to load userData:", err);
         setUserData(null);
         setError("Failed to fetch user data.");
       })
-      .finally(() => setIsLoading(false)); // Ensure loading state is set to false
+      .finally(() => setIsLoading(false));
   }, []);
 
-  // get the loged in user thoughts only
+  // Fetch and sort user thoughts
   useEffect(() => {
     axios
       .get("http://127.0.0.1:5000/api/thought/userthoughts", {
         withCredentials: true,
       })
       .then((response) => {
-        setUserThoughts(response.data.thoughts); // Directly set the first object
-        setError(null); // Clear any error
+        const sortedThoughts = response.data.thoughts.sort(
+          (a: Thoughts, b: Thoughts) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+        setUserThoughts(sortedThoughts);
+        setError(null);
       })
       .catch((err) => {
-        console.error("Failed to load userData:", err);
-        setUserData(null);
-        setError("Failed to fetch user data.");
+        console.error("Failed to load user thoughts:", err);
+        setUserThoughts([]);
+        setError("Failed to fetch user thoughts.");
       })
-      .finally(() => setIsLoading(false)); // Ensure loading state is set to false
+      .finally(() => setIsLoading(false));
   }, []);
+
+  // Fetch user likes
+  useEffect(() => {
+    axios
+      .get("http://127.0.0.1:5000/api/reaction/get_user_likes", {
+        withCredentials: true,
+      })
+      .then((response) => {
+        if (response.data.success && response.data.data.likes) {
+          setLikes(
+            response.data.data.likes.map((like: any) => like.thought_id)
+          );
+        } else {
+          setLikes([]);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch user likes:", err);
+        setError("Failed to load user likes.");
+      });
+  }, []);
+
+  // Delete a thought
+  const handleDeleteThought = (thoughtId: number) => {
+    axios
+      .delete(`http://127.0.0.1:5000/api/thought/delete/${thoughtId}`, {
+        withCredentials: true,
+      })
+      .then((response) => {
+        console.log(response);
+        if (response.data.success) {
+          setUserThoughts((prevThoughts) =>
+            prevThoughts.filter((thought) => thought.id !== thoughtId)
+          );
+        } else {
+          alert("Failed to delete the thought.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error deleting thought:", err);
+        alert("An error occurred while deleting the thought.");
+      });
+  };
 
   const bannerUrl = userData
     ? `http://127.0.0.1:5000/api/uploadImage/getdp`
-    : Banner; // Fallback banner URL
+    : Banner;
 
   const openModal = () => {
     const modal = document.getElementById("my_modal_3");
@@ -134,7 +185,6 @@ const Profile = () => {
               <dialog id="my_modal_3" className="modal">
                 <div className="modal-box bg-black opacity-90">
                   <form method="dialog">
-                    {/* Close Button */}
                     <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
                       ✕
                     </button>
@@ -205,15 +255,27 @@ const Profile = () => {
 
                   <div className="flex gap-10 mt-4">
                     <div className="flex items-center gap-2">
-                      <AiOutlineLike />
-                      <p>{<LikeCount thoughtId={thoughtItem.id} />}</p>
+                      <LikeButton
+                        thoughtId={thoughtItem.id}
+                        initialUserLiked={likes.includes(thoughtItem.id)}
+                      />
+                      <div>{thoughtItem.id}</div>
+                    </div>
+                    <div
+                      className="flex items-center gap-2 text-red-500 cursor-pointer"
+                      onClick={() => handleDeleteThought(thoughtItem.id)}
+                    >
+                      <AiOutlineDelete />
+                      <span>Delete</span>
                     </div>
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <p>No thoughts to display</p>
+            <p className="text-center mt-6 text-gray-400">
+              You haven't shared any thoughts yet.
+            </p>
           )}
         </div>
       </div>

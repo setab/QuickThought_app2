@@ -3,6 +3,7 @@ from app.controllers.thought_controller import (
     get_thoughts,
     add_thoughts,
     get_all_thought_user,
+    delete_thought,
 )
 
 thought_bp = Blueprint("thought", __name__, url_prefix="/api/thought")
@@ -40,3 +41,8 @@ def add_thought():
         return add_thoughts(content, user_id)
     else:
         return {"message": "Content is required"}, 400
+
+
+@thought_bp.route("/delete/<int:thought_id>", methods=["DELETE"])
+def delete(thought_id):
+    return delete_thought(thought_id)
