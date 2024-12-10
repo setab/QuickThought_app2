@@ -8,8 +8,9 @@ import Signin from "./Pages/Signin";
 import MainLayout from "./Pages/MainLayout";
 import Profile from "./Pages/Profile";
 import Home from "./Pages/Home";
-// import ProtectedRoute from "./components/ProtectedRoute"; // Import your ProtectedRoute
+import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./components/AuthProvider"; // Import your AuthProvider
+import NotFound from "./components/NotFound"; // Import your existing 404 component
 
 const router = createBrowserRouter([
   {
@@ -19,17 +20,17 @@ const router = createBrowserRouter([
       {
         path: "/", // Home route
         element: (
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <Home />
-          // </ProtectedRoute>
+          </ProtectedRoute>
         ),
       },
       {
         path: "/profile", // Profile route
         element: (
-          // <ProtectedRoute>
+          <ProtectedRoute>
             <Profile />
-          // </ProtectedRoute>
+          </ProtectedRoute>
         ),
       },
     ],
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
   {
     path: "/signin", // Signin route
     element: <Signin />,
+  },
+  {
+    path: "*", // Catch-all route for undefined paths
+    element: <NotFound />, // Render your 404 component here
   },
 ]);
 

@@ -4,10 +4,10 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useState, useEffect } from "react";
-import { AiOutlineLike, AiOutlineDelete } from "react-icons/ai";
+// import { AiOutlineLike, AiOutlineDelete } from "react-icons/ai";
 import ProfilePic from "../components/ProfilePic";
 import LikeButton from "../components/LikeButton";
-
+import UploadImgButton from "../components/UploadImgButton";
 interface AboutUser {
   bio: string;
   id: number;
@@ -217,6 +217,17 @@ const Profile = () => {
                         defaultValue={userData?.location || ""}
                       />
                     </label>
+                    {/* Profile Picture Upload */}
+                    <label className="input input-bordered flex items-center gap-2 mt-2">
+                      <span>Upload Banner</span>
+                      <UploadImgButton uploadType="dp" />
+                    </label>
+
+                    {/* Banner Upload */}
+                    <label className="input input-bordered flex items-center gap-2 mt-2">
+                      <span>Upload Profile Picture</span>
+                      <UploadImgButton uploadType="pp" />
+                    </label>
                   </form>
                 </div>
               </dialog>
@@ -265,7 +276,7 @@ const Profile = () => {
                       className="flex items-center gap-2 text-red-500 cursor-pointer"
                       onClick={() => handleDeleteThought(thoughtItem.id)}
                     >
-                      <AiOutlineDelete />
+                      {/* <AiOutlineDelete /> */}
                       <span>Delete</span>
                     </div>
                   </div>
